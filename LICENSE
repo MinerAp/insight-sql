@@ -1,0 +1,16 @@
+This software contains or makes use of software under the following licenses:
+
+=== The Apache Software License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0) ===
+Apache Log4j SLF4J Binding, FindBugs-jsr305, HikariCP, Javassist
+
+=== GNU Lesser General Public License, Version 2.1 (https://www.gnu.org/licenses/lgpl-2.1) ===
+mariadb-java-client, Trove
+
+=== GNU Lesser General Public License, Version 3 (https://www.gnu.org/licenses/lgpl-3.0) ===
+CraftBukkit
+
+=== BSD License (http://opensource.org/licenses/BSD-3-Clause) ===
+PostgreSQL JDBC Driver
+
+=== MIT License (http://opensource.org/licenses/MIT) ===
+Project Lombok, SLF4J API Module

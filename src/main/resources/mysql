@@ -1,0 +1,151 @@
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+--
+-- Database: `insight`
+--
+
+DELIMITER $$
+--
+-- Functions
+--
+DROP FUNCTION IF EXISTS `NEAR`$$
+CREATE FUNCTION `NEAR`(`x1` MEDIUMINT, `x2` MEDIUMINT, `y1` SMALLINT, `y2` SMALLINT, `z1` MEDIUMINT, `z2` MEDIUMINT, `radius_squared` INT UNSIGNED) RETURNS tinyint(1)
+    NO SQL
+    DETERMINISTIC
+return POW(x1-x2,2) + POW(y1-y2,2) + POW(z1-z2,2) <= radius_squared$$
+
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `actions`
+--
+
+CREATE TABLE IF NOT EXISTS `actions` (
+  `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `actors`
+--
+
+CREATE TABLE IF NOT EXISTS `actors` (
+  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) NOT NULL,
+  `uuid` binary(16) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `materials`
+--
+
+CREATE TABLE IF NOT EXISTS `materials` (
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `namespace` varchar(64) NOT NULL,
+  `name` varchar(128) NOT NULL,
+  `subtype` smallint(5) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`,`subtype`,`namespace`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `world_blocks`
+--
+
+CREATE TABLE IF NOT EXISTS `world_blocks` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `datetime` datetime(3) NOT NULL,
+  `actionid` tinyint(3) unsigned NOT NULL,
+  `actorid` mediumint(8) unsigned NOT NULL,
+  `x` mediumint(9) NOT NULL,
+  `y` smallint(6) NOT NULL,
+  `z` mediumint(9) NOT NULL,
+  `blockid` smallint(5) unsigned NOT NULL,
+  `metadata` varbinary(8192) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `datetime` (`datetime`),
+  KEY `actionid` (`actionid`),
+  KEY `actorid` (`actorid`),
+  KEY `coordinates` (`x`,`z`,`y`),
+  KEY `blockid` (`blockid`),
+  CONSTRAINT `world_blocks_ibfk_1` FOREIGN KEY (`actionid`) REFERENCES `actions` (`id`),
+  CONSTRAINT `world_blocks_ibfk_2` FOREIGN KEY (`actorid`) REFERENCES `actors` (`id`),
+  CONSTRAINT `world_blocks_ibfk_3` FOREIGN KEY (`blockid`) REFERENCES `materials` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `world_entities`
+--
+
+CREATE TABLE IF NOT EXISTS `world_entities` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `datetime` datetime(3) NOT NULL,
+  `actionid` tinyint(3) unsigned NOT NULL,
+  `actorid` mediumint(8) unsigned NOT NULL,
+  `x` mediumint(9) NOT NULL,
+  `y` smallint(6) NOT NULL,
+  `z` mediumint(9) NOT NULL,
+  `acteeid` mediumint(8) unsigned NOT NULL,
+  `metadata` varbinary(8192) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `datetime` (`datetime`),
+  KEY `actionid` (`actionid`),
+  KEY `actorid` (`actorid`),
+  KEY `coordinates` (`x`,`z`,`y`),
+  KEY `acteeid` (`acteeid`),
+  CONSTRAINT `world_entities_ibfk_1` FOREIGN KEY (`actionid`) REFERENCES `actions` (`id`),
+  CONSTRAINT `world_entities_ibfk_2` FOREIGN KEY (`actorid`) REFERENCES `actors` (`id`),
+  CONSTRAINT `world_entities_ibfk_3` FOREIGN KEY (`acteeid`) REFERENCES `actors` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `world_items`
+--
+
+CREATE TABLE IF NOT EXISTS `world_items` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `datetime` datetime(3) NOT NULL,
+  `actionid` tinyint(3) unsigned NOT NULL,
+  `actorid` mediumint(8) unsigned NOT NULL,
+  `x` mediumint(9) NOT NULL,
+  `y` smallint(6) NOT NULL,
+  `z` mediumint(9) NOT NULL,
+  `itemid` smallint(5) unsigned NOT NULL,
+  `metadata` varbinary(8192) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `datetime` (`datetime`),
+  KEY `actionid` (`actionid`),
+  KEY `actorid` (`actorid`),
+  KEY `coordinates` (`x`,`z`,`y`),
+  KEY `itemid` (`itemid`),
+  CONSTRAINT `world_items_ibfk_1` FOREIGN KEY (`actionid`) REFERENCES `actions` (`id`),
+  CONSTRAINT `world_items_ibfk_2` FOREIGN KEY (`actorid`) REFERENCES `actors` (`id`),
+  CONSTRAINT `world_items_ibfk_3` FOREIGN KEY (`itemid`) REFERENCES `materials` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
