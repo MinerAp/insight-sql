@@ -1,9 +1,5 @@
 package com.amshulman.insight.backend;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,8 +20,8 @@ import com.amshulman.insight.row.DatabaseDumper;
 import com.amshulman.insight.row.RowEntry;
 import com.amshulman.insight.sql.ConnectionPool;
 import com.amshulman.insight.sql.ForeignKeyCache;
-import com.amshulman.insight.sql.ScriptRunner;
 import com.amshulman.insight.sql.SqlSelectionQueryBuilder;
+import com.amshulman.insight.sql.TableCreator;
 import com.amshulman.insight.tbd.RowCache;
 import com.amshulman.insight.util.InsightDatabaseConfigurationInfo;
 
@@ -44,24 +40,14 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
     public SqlReadWriteBackend(InsightDatabaseConfigurationInfo configurationContext) {
         try {
             cp = new ConnectionPool(configurationContext);
-
-            if (BackendType.MYSQL.equals(configurationContext.getDatabaseType())) {
-                runScript(getClass().getResourceAsStream("/mysql"));
-            }
-
             keyCache = new ForeignKeyCache(cp);
-        } catch (IOException | SQLException e) {
+            TableCreator.createBasicTables(cp);
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
         logger = configurationContext.getLogger();
         cache = new RowCache(maxCacheSize);
-    }
-
-    private void runScript(InputStream in) throws SQLException, IOException {
-        try (Connection conn = cp.getConnection()) {
-            ScriptRunner.runScript(conn, new BufferedReader(new InputStreamReader(in, "UTF-8")), true, true);
-        }
     }
 
     @Override
@@ -186,6 +172,15 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
             e.printStackTrace();
         } finally {
             keyCache.releaseWriteLock();
+        }
+    }
+
+    @Override
+    public void registerWorld(String worldName) {
+        try {
+            TableCreator.createWorldTables(cp, worldName);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
