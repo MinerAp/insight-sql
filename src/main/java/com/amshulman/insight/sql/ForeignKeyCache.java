@@ -1,5 +1,6 @@
 package com.amshulman.insight.sql;
 
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,6 +47,12 @@ public final class ForeignKeyCache {
 
             while (actorsRows.next()) {
                 actorCache.put(actorsRows.getString(1), actorsRows.getInt(2));
+
+                byte[] uuid = actorsRows.getBytes(3);
+                if(uuid != null) {
+                    ByteBuffer bb = ByteBuffer.wrap(uuid);
+                    uuidCache.put(new UUID(bb.getLong(), bb.getLong()), actorsRows.getString(1));
+                }
             }
 
             while (actionsRows.next()) {
