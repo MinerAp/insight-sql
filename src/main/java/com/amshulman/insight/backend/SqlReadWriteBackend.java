@@ -5,6 +5,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -99,6 +103,24 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
     @Override
     public QueryParameterBuilder newQueryBuilder() {
         return new QueryParameterBuilder();
+    }
+
+    @Override
+    public Set<String> getWorlds() {
+        Set<String> worlds = new HashSet<String>(10);
+        try (Connection conn = cp.getConnection();
+             Statement stmt = conn.createStatement();) {
+            stmt.execute("SELECT REPLACE(`TABLE_NAME`, '_blocks', '') FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA` = 'insight_testing' AND `TABLE_NAME` LIKE \"%_blocks%\"");
+            ResultSet rs = stmt.getResultSet();
+            while (rs.next()) {
+                worlds.add(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Collections.emptySet();
+        }
+
+        return worlds;
     }
 
     @Override
