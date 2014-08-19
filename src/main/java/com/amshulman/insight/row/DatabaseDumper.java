@@ -5,6 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -34,36 +38,46 @@ public final class DatabaseDumper implements Runnable {
             return;
         }
 
-        preprocessResults();
+        Set<String> worlds = preprocessResults();
+        Map<String, PreparedStatement[]> stmts = new HashMap<>(worlds.size());
 
         keyCache.acquireReadLock();
-        try (Connection conn = cp.getConnection();
-             PreparedStatement insertBlock = conn.prepareStatement("INSERT INTO `world_blocks`(`datetime`, `actionid`, `actorid`, `x`, `y`, `z`, `blockid`, `metadata`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-             PreparedStatement insertItem = conn.prepareStatement("INSERT INTO `world_items`(`datetime`, `actionid`, `actorid`, `x`, `y`, `z`, `itemid`, `metadata`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-             PreparedStatement insertEntity = conn.prepareStatement("INSERT INTO `world_entities`(`datetime`, `actionid`, `actorid`, `x`, `y`, `z`, `acteeid`, `metadata`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");) {
+        try (Connection conn = cp.getConnection()) {
             conn.setAutoCommit(false);
 
+            for (String world : worlds) {
+                stmts.put(world, new PreparedStatement[] {
+                    conn.prepareStatement("INSERT INTO `" + world + "_blocks`(`datetime`, `actionid`, `actorid`, `x`, `y`, `z`, `blockid`, `metadata`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
+                    conn.prepareStatement("INSERT INTO `" + world + "_items`(`datetime`, `actionid`, `actorid`, `x`, `y`, `z`, `itemid`, `metadata`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
+                    conn.prepareStatement("INSERT INTO `" + world + "_entities`(`datetime`, `actionid`, `actorid`, `x`, `y`, `z`, `acteeid`, `metadata`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)") }
+                );
+            }
+
             for (RowEntry row : rowCache) {
+                PreparedStatement stmt;
+
                 if (row instanceof BlockRowEntry) {
-                    setBasicParameters(insertBlock, row);
+                    stmt = stmts.get(row.world)[0];
+                    setBasicParameters(stmt, row);
 
                     BlockRowEntry blockRow = (BlockRowEntry) row;
                     InsightMaterial m = MaterialCompat.getInsightMaterial(blockRow.block);
-                    insertBlock.setShort(7, keyCache.getMaterialId(m.getNamespace(), m.getName(), m.getSubtype()));
+                    stmt.setShort(7, keyCache.getMaterialId(m.getNamespace(), m.getName(), m.getSubtype()));
 
                     if (blockRow.metadata == null && blockRow.previousBlock == null) {
-                        insertBlock.setNull(8, java.sql.Types.VARBINARY);
+                        stmt.setNull(8, java.sql.Types.VARBINARY);
                     } else {
-                        insertBlock.setBytes(8, SerializationUtil.serializeMetadata(new BlockMetadata(blockRow.metadata, blockRow.previousBlock))); // blockRow.metadata
+                        stmt.setBytes(8, SerializationUtil.serializeMetadata(new BlockMetadata(blockRow.metadata, blockRow.previousBlock)));
                     }
 
-                    insertBlock.addBatch();
+                    stmt.addBatch();
                 } else if (row instanceof ItemRowEntry) {
-                    setBasicParameters(insertItem, row);
+                    stmt = stmts.get(row.world)[1];
+                    setBasicParameters(stmt, row);
 
                     ItemRowEntry itemRow = (ItemRowEntry) row;
                     InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.itemType, itemRow.damage);
-                    insertItem.setShort(7, keyCache.getMaterialId(m.getNamespace(), m.getName(), m.getSubtype()));
+                    stmt.setShort(7, keyCache.getMaterialId(m.getNamespace(), m.getName(), m.getSubtype()));
 
                     StorageMetadata meta = null;
                     if (itemRow.metadata.serialize().size() > 1) {
@@ -73,26 +87,29 @@ public final class DatabaseDumper implements Runnable {
                     }
 
                     if (meta != null) {
-                        insertItem.setBytes(8, SerializationUtil.serializeMetadata(meta));
+                        stmt.setBytes(8, SerializationUtil.serializeMetadata(meta));
                     } else {
-                        insertItem.setNull(8, java.sql.Types.VARBINARY);
+                        stmt.setNull(8, java.sql.Types.VARBINARY);
                     }
 
-                    insertItem.addBatch();
+                    stmt.addBatch();
                 } else if (row instanceof EntityRowEntry) {
-                    setBasicParameters(insertEntity, row);
+                    stmt = stmts.get(row.world)[2];
+                    setBasicParameters(stmt, row);
 
                     EntityRowEntry entityRow = (EntityRowEntry) row;
-                    insertEntity.setInt(7, keyCache.getActorId(entityRow.actee));
-                    insertEntity.setNull(8, java.sql.Types.VARBINARY);
+                    stmt.setInt(7, keyCache.getActorId(entityRow.actee));
+                    stmt.setNull(8, java.sql.Types.VARBINARY);
 
-                    insertEntity.addBatch();
+                    stmt.addBatch();
                 }
             }
 
-            insertBlock.executeBatch();
-            insertItem.executeBatch();
-            insertEntity.executeBatch();
+            for(PreparedStatement[] worldStatements : stmts.values()) {
+                worldStatements[0].executeBatch();
+                worldStatements[1].executeBatch();
+                worldStatements[2].executeBatch();
+            }
 
             conn.setAutoCommit(true);
             rowCache.markClean();
@@ -103,7 +120,8 @@ public final class DatabaseDumper implements Runnable {
         }
     }
 
-    private void preprocessResults() {
+    private Set<String> preprocessResults() {
+        Set<String> worlds = new HashSet<>(10);
         keyCache.acquireReadLock();
         try {
             // Ensure we know the row ids for all materials, actions, and actors
@@ -124,12 +142,15 @@ public final class DatabaseDumper implements Runnable {
 
                 checkActor(row.actor);
                 checkAction(row.action);
+                worlds.add(row.world);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             keyCache.releaseReadLock();
         }
+
+        return worlds;
     }
 
     private void setBasicParameters(PreparedStatement statement, RowEntry row) throws SQLException {

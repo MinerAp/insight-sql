@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.google.common.base.CharMatcher;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -49,6 +51,10 @@ public class TableCreator {
     }
 
     public static void createWorldTables(ConnectionPool cp, String worldName) throws SQLException {
+        if (!CharMatcher.JAVA_LETTER_OR_DIGIT.or(CharMatcher.anyOf("_-")).matchesAllOf(worldName)) {
+            throw new IllegalArgumentException(worldName + " contains unacceptable special characters");
+        }
+
         String createBlockTable =
                 "CREATE TABLE IF NOT EXISTS `%world%_blocks` (" +
                 "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT," +
