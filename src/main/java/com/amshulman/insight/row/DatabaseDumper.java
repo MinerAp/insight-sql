@@ -6,7 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import com.amshulman.insight.serialization.BlockMetadata;
 import com.amshulman.insight.serialization.ItemMetadata;
@@ -19,11 +21,12 @@ import com.amshulman.insight.types.MaterialCompat;
 import com.amshulman.insight.util.SerializationUtil;
 
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class DatabaseDumper implements Runnable {
 
-    private final ConnectionPool cp;
-    private final RowCache rowCache;
-    private final ForeignKeyCache keyCache;
+    ConnectionPool cp;
+    RowCache rowCache;
+    ForeignKeyCache keyCache;
 
     @Override
     public void run() {
@@ -31,32 +34,7 @@ public final class DatabaseDumper implements Runnable {
             return;
         }
 
-        keyCache.acquireReadLock();
-        try {
-            // Ensure we know the row ids for all materials, actions, and actors
-            // Only NPCs actors will be caught here, players are handled at login
-            for (RowEntry row : rowCache) {
-                if (row instanceof BlockRowEntry) {
-                    InsightMaterial m = MaterialCompat.getInsightMaterial(((BlockRowEntry) row).block);
-                    checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
-                } else if (row instanceof ItemRowEntry) {
-                    ItemRowEntry itemRow = (ItemRowEntry) row;
-                    InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.itemType, itemRow.damage);
-                    checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
-                } else if (row instanceof EntityRowEntry) {
-                    checkActor(((EntityRowEntry) row).actee);
-                } else {
-                    continue;
-                }
-
-                checkActor(row.actor);
-                checkAction(row.action);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            keyCache.releaseReadLock();
-        }
+        preprocessResults();
 
         keyCache.acquireReadLock();
         try (Connection conn = cp.getConnection();
@@ -118,6 +96,35 @@ public final class DatabaseDumper implements Runnable {
 
             conn.setAutoCommit(true);
             rowCache.markClean();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            keyCache.releaseReadLock();
+        }
+    }
+
+    private void preprocessResults() {
+        keyCache.acquireReadLock();
+        try {
+            // Ensure we know the row ids for all materials, actions, and actors
+            // Only NPCs actors will be caught here, players are handled at login
+            for (RowEntry row : rowCache) {
+                if (row instanceof BlockRowEntry) {
+                    InsightMaterial m = MaterialCompat.getInsightMaterial(((BlockRowEntry) row).block);
+                    checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
+                } else if (row instanceof ItemRowEntry) {
+                    ItemRowEntry itemRow = (ItemRowEntry) row;
+                    InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.itemType, itemRow.damage);
+                    checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
+                } else if (row instanceof EntityRowEntry) {
+                    checkActor(((EntityRowEntry) row).actee);
+                } else {
+                    continue;
+                }
+
+                checkActor(row.actor);
+                checkAction(row.action);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
