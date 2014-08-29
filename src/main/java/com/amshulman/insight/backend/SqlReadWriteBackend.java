@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +30,8 @@ import com.amshulman.insight.util.InsightDatabaseConfigurationInfo;
 
 public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
 
+    private final String databaseName;
+
     private int maxCacheSize = 100;
     private int targetCacheSize = 75;
     private RowCache cache;
@@ -49,6 +50,8 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        databaseName = configurationContext.getDatabaseName();
 
         logger = configurationContext.getLogger();
         cache = new RowCache(maxCacheSize);
@@ -109,8 +112,9 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
     public Set<String> getWorlds() {
         Set<String> worlds = new HashSet<String>(10);
         try (Connection conn = cp.getConnection();
-             Statement stmt = conn.createStatement();) {
-            stmt.execute("SELECT REPLACE(`TABLE_NAME`, '_blocks', '') FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA` = 'insight_testing' AND `TABLE_NAME` LIKE \"%_blocks%\"");
+             PreparedStatement stmt = conn.prepareStatement("SELECT REPLACE(`TABLE_NAME`, '_blocks', '') FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` LIKE \"%_blocks%\"");) {
+            stmt.setString(1, databaseName);
+            stmt.execute();
             ResultSet rs = stmt.getResultSet();
             while (rs.next()) {
                 worlds.add(rs.getString(1));
