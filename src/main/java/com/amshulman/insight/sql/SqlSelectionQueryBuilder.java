@@ -86,6 +86,8 @@ public class SqlSelectionQueryBuilder {
             query += " DESC";
         }
 
+        query += " LIMIT 900";
+
         return new SqlSelectionQuery(query, queryStringParams, queryTimeParams, queryIntParams, queryShortParams, queryByteParams);
     }
 
