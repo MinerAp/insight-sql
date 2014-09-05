@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -126,26 +127,32 @@ public final class DatabaseDumper implements Runnable {
         try {
             // Ensure we know the row ids for all materials, actions, and actors
             // Only NPCs actors will be caught here, players are handled at login
-            for (RowEntry row : rowCache) {
-                if (row instanceof BlockRowEntry) {
-                    InsightMaterial m = MaterialCompat.getInsightMaterial(((BlockRowEntry) row).block);
-                    checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
-                } else if (row instanceof ItemRowEntry) {
-                    ItemRowEntry itemRow = (ItemRowEntry) row;
-                    InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.itemType, itemRow.damage);
-                    checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
-                } else if (row instanceof EntityRowEntry) {
-                    checkActor(((EntityRowEntry) row).actee);
-                } else {
-                    continue;
-                }
+            for (Iterator<RowEntry> iter = rowCache.iterator(); iter.hasNext();) {
+                RowEntry row = iter.next();
 
-                checkActor(row.actor);
-                checkAction(row.action);
-                worlds.add(row.world);
+                try {
+                    if (row instanceof BlockRowEntry) {
+                        InsightMaterial m = MaterialCompat.getInsightMaterial(((BlockRowEntry) row).block);
+                        checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
+                    } else if (row instanceof ItemRowEntry) {
+                        ItemRowEntry itemRow = (ItemRowEntry) row;
+                        InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.itemType, itemRow.damage);
+                        checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
+                    } else if (row instanceof EntityRowEntry) {
+                        checkActor(((EntityRowEntry) row).actee);
+                    } else {
+                        continue;
+                    }
+
+                    checkActor(row.actor);
+                    checkAction(row.action);
+                    worlds.add(row.world);
+                } catch (SQLException e) {
+                    System.err.println(row);
+                    iter.remove();
+                    e.printStackTrace();
+                }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         } finally {
             keyCache.releaseReadLock();
         }
