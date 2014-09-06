@@ -45,8 +45,8 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
     public SqlReadWriteBackend(InsightDatabaseConfigurationInfo configurationContext) {
         try {
             cp = new ConnectionPool(configurationContext);
-            keyCache = new ForeignKeyCache(cp);
             TableCreator.createBasicTables(cp);
+            keyCache = new ForeignKeyCache(cp);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
