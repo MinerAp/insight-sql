@@ -15,8 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TroveLoops {
 
-    @AllArgsConstructor(staticName = "with")
-    public static final class AddWhereClauseObjectParameters<T> implements TIntObjectProcedure<T> {
+    @AllArgsConstructor(access = AccessLevel.PACKAGE, staticName = "with")
+    static final class AddWhereClauseObjectParameters<T> implements TIntObjectProcedure<T> {
 
         private final TIntObjectMap<T> destination;
         private final int offset;
@@ -28,8 +28,8 @@ public class TroveLoops {
         }
     }
 
-    @AllArgsConstructor(staticName = "with")
-    public static final class AddWhereClauseIntParameters implements TIntIntProcedure {
+    @AllArgsConstructor(access = AccessLevel.PACKAGE, staticName = "with")
+    static final class AddWhereClauseIntParameters implements TIntIntProcedure {
 
         private final TIntIntMap destination;
         private final int offset;
@@ -41,8 +41,8 @@ public class TroveLoops {
         }
     }
 
-    @AllArgsConstructor(staticName = "with")
-    public static final class AddWhereClauseShortParameters implements TIntShortProcedure {
+    @AllArgsConstructor(access = AccessLevel.PACKAGE, staticName = "with")
+    static final class AddWhereClauseShortParameters implements TIntShortProcedure {
 
         private final TIntShortMap destination;
         private final int offset;
@@ -54,8 +54,8 @@ public class TroveLoops {
         }
     }
 
-    @AllArgsConstructor(staticName = "with")
-    public static final class AddWhereClauseByteParameters implements TIntByteProcedure {
+    @AllArgsConstructor(access = AccessLevel.PACKAGE, staticName = "with")
+    static final class AddWhereClauseByteParameters implements TIntByteProcedure {
 
         private final TIntByteMap destination;
         private final int offset;

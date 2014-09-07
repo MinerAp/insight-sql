@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 import com.amshulman.insight.action.BlockAction;
@@ -435,7 +436,7 @@ public class SqlSelectionQueryBuilder {
         return query;
     }
 
-    @AllArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class SqlSelectionQuery {
 
         private final String sql;

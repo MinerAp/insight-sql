@@ -30,7 +30,7 @@ public class InsightSqlResultSet extends InsightResultSet {
         doneAdding();
     }
 
-    public InsightSqlResultSet(List<InsightRecord> subList, QueryParameters params) {
+    private InsightSqlResultSet(List<InsightRecord> subList, QueryParameters params) {
         super(subList, params);
     }
 
