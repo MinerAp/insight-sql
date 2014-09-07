@@ -27,6 +27,7 @@ import com.amshulman.insight.sql.SqlSelectionQueryBuilder;
 import com.amshulman.insight.sql.TableCreator;
 import com.amshulman.insight.tbd.RowCache;
 import com.amshulman.insight.util.InsightDatabaseConfigurationInfo;
+import com.amshulman.insight.util.PlayerUtil;
 
 public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
 
@@ -151,6 +152,19 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
 
         keyCache.acquireReadLock();
         try {
+
+            if (keyCache.containsActor(playerName) && !playerName.equals(keyCache.getActor(uuid))) {
+                // The player we knew about has changed their name and someone else has taken their old name
+                String newName = PlayerUtil.getCurrentName(keyCache.getUUID(playerName));
+                keyCache.releaseReadLock();
+
+                try {
+                    registerPlayer(newName, keyCache.getUUID(playerName));
+                } finally {
+                    keyCache.acquireReadLock();
+                }
+            }
+
             if (keyCache.containsUUID(uuid)) {
                 if (keyCache.getActor(uuid).equals(playerName)) {
                     return; // Information is correct

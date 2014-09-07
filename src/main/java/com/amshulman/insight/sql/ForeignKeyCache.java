@@ -13,7 +13,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Table;
 
 public final class ForeignKeyCache {
@@ -23,7 +25,7 @@ public final class ForeignKeyCache {
     private static final String MATERIALS_QUERY = "SELECT `namespace`, `name`, `subtype`, `id` FROM `materials`";
 
     private final Map<String, Integer> actorCache = new HashMap<>();
-    private final Map<UUID, String> uuidCache = new HashMap<>();
+    private final BiMap<UUID, String> uuidCache = HashBiMap.create();
     private final Map<String, Byte> actionCache = new HashMap<>();
     private final Table<String, Short, Short> materialCache = HashBasedTable.create();
 
@@ -49,7 +51,7 @@ public final class ForeignKeyCache {
                 actorCache.put(actorsRows.getString(1), actorsRows.getInt(2));
 
                 byte[] uuid = actorsRows.getBytes(3);
-                if(uuid != null) {
+                if (uuid != null) {
                     ByteBuffer bb = ByteBuffer.wrap(uuid);
                     uuidCache.put(new UUID(bb.getLong(), bb.getLong()), actorsRows.getString(1));
                 }
@@ -121,6 +123,10 @@ public final class ForeignKeyCache {
 
     public short getMaterialId(String namespace, String name, short subtype) {
         return materialCache.get(getMaterialKey(namespace, name), subtype);
+    }
+
+    public UUID getUUID(String actor) {
+        return uuidCache.inverse().get(actor);
     }
 
     public void addActor(String actor, Integer id) {
