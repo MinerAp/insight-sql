@@ -78,13 +78,13 @@ public final class DatabaseDumper implements Runnable {
 
                     ItemRowEntry itemRow = (ItemRowEntry) row;
                     InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.itemType, itemRow.damage);
-                    stmt.setShort(7, keyCache.getMaterialId(m.getNamespace(), m.getName(), m.getSubtype()));
+                    stmt.setShort(7, keyCache.getMaterialId(m.getNamespace(), m.getName(), (short) 0)); // damage value is stored in meta
 
                     StorageMetadata meta = null;
                     if (itemRow.metadata.serialize().size() > 1) {
-                        meta = new ItemMetadata(itemRow.metadata, itemRow.quantity);
-                    } else if (itemRow.quantity > 1) {
-                        meta = new ItemMetadata(null, itemRow.quantity);
+                        meta = new ItemMetadata(itemRow.metadata, itemRow.quantity, m.getSubtype());
+                    } else if (itemRow.quantity > 1 || m.getSubtype() != 0) {
+                        meta = new ItemMetadata(null, itemRow.quantity, m.getSubtype());
                     }
 
                     if (meta != null) {
@@ -137,7 +137,7 @@ public final class DatabaseDumper implements Runnable {
                     } else if (row instanceof ItemRowEntry) {
                         ItemRowEntry itemRow = (ItemRowEntry) row;
                         InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.itemType, itemRow.damage);
-                        checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
+                        checkMaterial(m.getNamespace(), m.getName(), (short) 0); // damage value is stored in meta
                     } else if (row instanceof EntityRowEntry) {
                         checkActor(((EntityRowEntry) row).actee);
                     } else {

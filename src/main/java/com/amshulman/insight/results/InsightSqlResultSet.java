@@ -4,7 +4,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.amshulman.insight.action.BlockAction;
+import com.amshulman.insight.action.InsightAction;
+import com.amshulman.insight.action.ItemAction;
 import com.amshulman.insight.query.QueryParameters;
+import com.amshulman.insight.serialization.ItemMetadata;
+import com.amshulman.insight.serialization.StorageMetadata;
 import com.amshulman.insight.types.EventCompat;
 import com.amshulman.insight.types.InsightMaterial;
 import com.amshulman.insight.util.SerializationUtil;
@@ -14,17 +19,33 @@ public class InsightSqlResultSet extends InsightResultSet {
     public InsightSqlResultSet(ResultSet rs, QueryParameters params) throws SQLException {
         super(params);
         while (rs.next()) {
+            InsightAction action = EventCompat.getActionByName(rs.getString("action"));
+            StorageMetadata meta = SerializationUtil.deserializeMetadata(rs.getBytes("metadata"));
+
+            InsightMaterial material;
+            if (action instanceof BlockAction) {
+                material = new InsightMaterial(rs.getString("material_namespace"),
+                                               rs.getString("material_name"),
+                                               rs.getShort("material_subtype"));
+            } else if (action instanceof ItemAction) {
+                material = new InsightMaterial(rs.getString("material_namespace"),
+                                               rs.getString("material_name"),
+                                               meta == null ? 0 : ((ItemMetadata) meta).getDamage());
+            } else {
+                material = null;
+            }
+
             add(new InsightRecord(
                   rs.getTimestamp("datetime"),
                   rs.getString("actor"),
-                  EventCompat.getActionByName(rs.getString("action")),
+                  action,
                   rs.getInt("x"),
                   rs.getInt("y"),
                   rs.getInt("z"),
                   rs.getString("world"),
-                  new InsightMaterial(rs.getString("material_namespace"), rs.getString("material_name"), rs.getShort("material_subtype")),
+                  material,
                   rs.getString("actee"),
-                  SerializationUtil.deserializeMetadata(rs.getBytes("metadata"))));
+                  meta));
         }
 
         doneAdding();
