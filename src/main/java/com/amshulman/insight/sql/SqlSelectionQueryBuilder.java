@@ -263,9 +263,9 @@ public class SqlSelectionQueryBuilder {
                               "`z`, " + PARAM + ", " +
                               PARAM + RIGHT_PAREN);
 
-                    whereClauseIntParams.put(paramIndex++, params.getPoint().getBlockX());
-                    whereClauseIntParams.put(paramIndex++, params.getPoint().getBlockY());
-                    whereClauseIntParams.put(paramIndex++, params.getPoint().getBlockZ());
+                    whereClauseIntParams.put(paramIndex++, params.getPoint().getX());
+                    whereClauseIntParams.put(paramIndex++, params.getPoint().getY());
+                    whereClauseIntParams.put(paramIndex++, params.getPoint().getZ());
                     whereClauseIntParams.put(paramIndex++, params.getRadius() * params.getRadius());
                 }
 
@@ -276,9 +276,9 @@ public class SqlSelectionQueryBuilder {
                           "`y`" + EQUALS + PARAM + AND +
                           "`z`" + EQUALS + PARAM + RIGHT_PAREN);
 
-                whereClauseIntParams.put(paramIndex++, params.getPoint().getBlockX());
-                whereClauseIntParams.put(paramIndex++, params.getPoint().getBlockY());
-                whereClauseIntParams.put(paramIndex++, params.getPoint().getBlockZ());
+                whereClauseIntParams.put(paramIndex++, params.getPoint().getX());
+                whereClauseIntParams.put(paramIndex++, params.getPoint().getY());
+                whereClauseIntParams.put(paramIndex++, params.getPoint().getZ());
             }
         }
 
