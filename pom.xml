@@ -108,6 +108,12 @@
 			</exclusions>
 		</dependency>
 
+		<!-- Guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+
 		<!-- Bukkit -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
