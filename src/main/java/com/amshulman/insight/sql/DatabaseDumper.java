@@ -1,4 +1,4 @@
-package com.amshulman.insight.row;
+package com.amshulman.insight.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,8 +22,6 @@ import com.amshulman.insight.row.RowEntry;
 import com.amshulman.insight.serialization.BlockMetadata;
 import com.amshulman.insight.serialization.ItemMetadata;
 import com.amshulman.insight.serialization.StorageMetadata;
-import com.amshulman.insight.sql.ConnectionPool;
-import com.amshulman.insight.sql.ForeignKeyCache;
 import com.amshulman.insight.tbd.RowCache;
 import com.amshulman.insight.types.InsightMaterial;
 import com.amshulman.insight.types.MaterialCompat;
