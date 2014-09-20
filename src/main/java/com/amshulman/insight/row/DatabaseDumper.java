@@ -15,6 +15,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import com.amshulman.insight.row.BlockRowEntry;
+import com.amshulman.insight.row.EntityRowEntry;
+import com.amshulman.insight.row.ItemRowEntry;
+import com.amshulman.insight.row.RowEntry;
 import com.amshulman.insight.serialization.BlockMetadata;
 import com.amshulman.insight.serialization.ItemMetadata;
 import com.amshulman.insight.serialization.StorageMetadata;
@@ -58,33 +62,33 @@ public final class DatabaseDumper implements Runnable {
                 PreparedStatement stmt;
 
                 if (row instanceof BlockRowEntry) {
-                    stmt = stmts.get(row.world)[0];
+                    stmt = stmts.get(row.getWorld())[0];
                     setBasicParameters(stmt, row);
 
                     BlockRowEntry blockRow = (BlockRowEntry) row;
-                    InsightMaterial m = MaterialCompat.getInsightMaterial(blockRow.block);
+                    InsightMaterial m = MaterialCompat.getInsightMaterial(blockRow.getBlock());
                     stmt.setShort(7, keyCache.getMaterialId(m.getNamespace(), m.getName(), m.getSubtype()));
 
-                    if (blockRow.metadata == null && blockRow.previousBlock == null) {
+                    if (blockRow.getMetadata() == null && blockRow.getPreviousBlock() == null) {
                         stmt.setNull(8, java.sql.Types.VARBINARY);
                     } else {
-                        stmt.setBytes(8, SerializationUtil.serializeMetadata(new BlockMetadata(blockRow.metadata, blockRow.previousBlock)));
+                        stmt.setBytes(8, SerializationUtil.serializeMetadata(new BlockMetadata(blockRow.getMetadata(), blockRow.getPreviousBlock())));
                     }
 
                     stmt.addBatch();
                 } else if (row instanceof ItemRowEntry) {
-                    stmt = stmts.get(row.world)[1];
+                    stmt = stmts.get(row.getWorld())[1];
                     setBasicParameters(stmt, row);
 
                     ItemRowEntry itemRow = (ItemRowEntry) row;
-                    InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.itemType, itemRow.damage);
+                    InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.getItemType(), itemRow.getDamage());
                     stmt.setShort(7, keyCache.getMaterialId(m.getNamespace(), m.getName(), (short) 0)); // damage value is stored in meta
 
                     StorageMetadata meta = null;
-                    if (itemRow.metadata.serialize().size() > 1) {
-                        meta = new ItemMetadata(itemRow.metadata, itemRow.quantity, m.getSubtype());
-                    } else if (itemRow.quantity > 1 || m.getSubtype() != 0) {
-                        meta = new ItemMetadata(null, itemRow.quantity, m.getSubtype());
+                    if (itemRow.getMetadata().serialize().size() > 1) {
+                        meta = new ItemMetadata(itemRow.getMetadata(), itemRow.getQuantity(), m.getSubtype());
+                    } else if (itemRow.getQuantity() > 1 || m.getSubtype() != 0) {
+                        meta = new ItemMetadata(null, itemRow.getQuantity(), m.getSubtype());
                     }
 
                     if (meta != null) {
@@ -95,11 +99,11 @@ public final class DatabaseDumper implements Runnable {
 
                     stmt.addBatch();
                 } else if (row instanceof EntityRowEntry) {
-                    stmt = stmts.get(row.world)[2];
+                    stmt = stmts.get(row.getWorld())[2];
                     setBasicParameters(stmt, row);
 
                     EntityRowEntry entityRow = (EntityRowEntry) row;
-                    stmt.setInt(7, keyCache.getActorId(entityRow.actee));
+                    stmt.setInt(7, keyCache.getActorId(entityRow.getActee()));
                     stmt.setNull(8, java.sql.Types.VARBINARY);
 
                     stmt.addBatch();
@@ -132,21 +136,21 @@ public final class DatabaseDumper implements Runnable {
 
                 try {
                     if (row instanceof BlockRowEntry) {
-                        InsightMaterial m = MaterialCompat.getInsightMaterial(((BlockRowEntry) row).block);
+                        InsightMaterial m = MaterialCompat.getInsightMaterial(((BlockRowEntry) row).getBlock());
                         checkMaterial(m.getNamespace(), m.getName(), m.getSubtype());
                     } else if (row instanceof ItemRowEntry) {
                         ItemRowEntry itemRow = (ItemRowEntry) row;
-                        InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.itemType, itemRow.damage);
+                        InsightMaterial m = MaterialCompat.getInsightMaterial(itemRow.getItemType(), itemRow.getDamage());
                         checkMaterial(m.getNamespace(), m.getName(), (short) 0); // damage value is stored in meta
                     } else if (row instanceof EntityRowEntry) {
-                        checkActor(((EntityRowEntry) row).actee);
+                        checkActor(((EntityRowEntry) row).getActee());
                     } else {
                         continue;
                     }
 
-                    checkActor(row.actor);
-                    checkAction(row.action);
-                    worlds.add(row.world);
+                    checkActor(row.getActor());
+                    checkAction(row.getAction());
+                    worlds.add(row.getWorld());
                 } catch (SQLException e) {
                     System.err.println(row);
                     iter.remove();
@@ -161,12 +165,12 @@ public final class DatabaseDumper implements Runnable {
     }
 
     private void setBasicParameters(PreparedStatement statement, RowEntry row) throws SQLException {
-        statement.setTimestamp(1, new Timestamp(row.datetime));
-        statement.setByte(2, keyCache.getActionId(row.action));
-        statement.setInt(3, keyCache.getActorId(row.actor));
-        statement.setInt(4, row.x);
-        statement.setShort(5, row.y > Short.MAX_VALUE ? Short.MAX_VALUE : (row.y < Short.MIN_VALUE ? Short.MIN_VALUE : (short) row.y));
-        statement.setInt(6, row.z);
+        statement.setTimestamp(1, new Timestamp(row.getDatetime()));
+        statement.setByte(2, keyCache.getActionId(row.getAction()));
+        statement.setInt(3, keyCache.getActorId(row.getActor()));
+        statement.setInt(4, row.getX());
+        statement.setShort(5, (short) Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, row.getY())));
+        statement.setInt(6, row.getZ());
     }
 
     private void checkActor(String actorName) throws SQLException {
