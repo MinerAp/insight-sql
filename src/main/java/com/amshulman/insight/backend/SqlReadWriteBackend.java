@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -60,10 +61,12 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
 
     @Override
     public void submit(RowEntry data) {
-        cache.add(data);
-
-        if (cache.isFull()) {
-            flushCache(true);
+        try {
+            cache.add(data);
+        } finally {
+            if (cache.isFull()) {
+                flushCache(true);
+            }
         }
     }
 
@@ -95,7 +98,11 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
     private void flushCache(boolean async) {
         if (cache.isDirty()) {
             if (async) {
-                writeThreads.execute(new DatabaseDumper(cp, cache, keyCache));
+                try {
+                    writeThreads.execute(new DatabaseDumper(cp, cache, keyCache));
+                } catch (RejectedExecutionException e) {
+                    System.err.println("Throwing away RowCache because our queue is full!"); // TODO write this to disk
+                }
             } else {
                 new DatabaseDumper(cp, cache, keyCache).run();
             }
