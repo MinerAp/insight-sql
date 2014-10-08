@@ -9,8 +9,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +42,7 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
 
     private final ForeignKeyCache keyCache;
     private final ConnectionPool cp;
-    private final ExecutorService writeThreads = new ThreadPoolExecutor(2, 10, 1, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(100));
+    private final ExecutorService writeThreads = new ThreadPoolExecutor(2, 20, 1, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(1000));
 
     public SqlReadWriteBackend(InsightDatabaseConfigurationInfo configurationContext) {
         try {
