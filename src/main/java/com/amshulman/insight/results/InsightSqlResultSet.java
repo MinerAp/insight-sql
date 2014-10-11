@@ -11,6 +11,7 @@ import com.amshulman.insight.query.QueryParameters;
 import com.amshulman.insight.serialization.ItemMetadata;
 import com.amshulman.insight.serialization.StorageMetadata;
 import com.amshulman.insight.types.EventCompat;
+import com.amshulman.insight.types.InsightLocation;
 import com.amshulman.insight.types.InsightMaterial;
 import com.amshulman.insight.util.SerializationUtil;
 
@@ -39,10 +40,7 @@ public class InsightSqlResultSet extends InsightResultSet {
                   rs.getTimestamp("datetime"),
                   rs.getString("actor"),
                   action,
-                  rs.getInt("x"),
-                  rs.getInt("y"),
-                  rs.getInt("z"),
-                  rs.getString("world"),
+                  new InsightLocation(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getString("world")),
                   material,
                   rs.getString("actee"),
                   meta));
@@ -51,7 +49,7 @@ public class InsightSqlResultSet extends InsightResultSet {
         doneAdding();
     }
 
-    private InsightSqlResultSet(List<InsightRecord> subList, QueryParameters params) {
+    private InsightSqlResultSet(List<InsightRecord<?>> subList, QueryParameters params) {
         super(subList, params);
     }
 
