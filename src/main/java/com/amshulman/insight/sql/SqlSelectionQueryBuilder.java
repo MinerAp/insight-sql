@@ -81,7 +81,7 @@ public class SqlSelectionQueryBuilder {
         String query = buildSelectClauses(params, whereClause);
         query += " ORDER BY `datetime`";
 
-        if (params.isReverseOrder()) {
+        if (params.isOrderReversed()) {
             query += " ASC";
         } else {
             query += " DESC";
