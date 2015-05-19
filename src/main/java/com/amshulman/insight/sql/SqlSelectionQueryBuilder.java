@@ -23,6 +23,8 @@ import java.util.Set;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import com.amshulman.insight.action.BlockAction;
 import com.amshulman.insight.action.EntityAction;
@@ -35,50 +37,42 @@ import com.amshulman.insight.sql.TroveLoops.AddWhereClauseObjectParameters;
 import com.amshulman.insight.sql.TroveLoops.AddWhereClauseShortParameters;
 import com.amshulman.insight.types.InsightMaterial;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SqlSelectionQueryBuilder {
 
-    private static final String EMPTY_STRING = "";
-    private static final String AND = " AND ";
-    private static final String OR = " OR ";
-    private static final String NOT = " NOT ";
-    private static final String EQUALS = " = ";
-    private static final String NOT_EQUALS = " != ";
-    private static final String BETWEEN = " BETWEEN ";
-    private static final char LEFT_PAREN = '(';
-    private static final char RIGHT_PAREN = ')';
-    private static final char PARAM = '?';
+    static String EMPTY_STRING = "";
+    static String AND = " AND ";
+    static String OR = " OR ";
+    static String NOT = " NOT ";
+    static String EQUALS = " = ";
+    static String NOT_EQUALS = " != ";
+    static String BETWEEN = " BETWEEN ";
+    static char LEFT_PAREN = '(';
+    static char RIGHT_PAREN = ')';
+    static char PARAM = '?';
 
-    private static final TIntObjectMap<String> whereClauseStringParams = new TIntObjectHashMap<String>();
-    private static final TIntObjectMap<Date> whereClauseTimeParams = new TIntObjectHashMap<Date>();
-    private static final TIntIntMap whereClauseIntParams = new TIntIntHashMap();
-    private static final TIntShortMap whereClauseShortParams = new TIntShortHashMap();
-    private static final TIntByteMap whereClauseByteParams = new TIntByteHashMap();
+    TIntObjectMap<String> whereClauseStringParams = new TIntObjectHashMap<String>();
+    TIntObjectMap<Date> whereClauseTimeParams = new TIntObjectHashMap<Date>();
+    TIntIntMap whereClauseIntParams = new TIntIntHashMap();
+    TIntShortMap whereClauseShortParams = new TIntShortHashMap();
+    TIntByteMap whereClauseByteParams = new TIntByteHashMap();
 
-    private static final TIntObjectMap<String> queryStringParams = new TIntObjectHashMap<String>();
-    private static final TIntObjectMap<Date> queryTimeParams = new TIntObjectHashMap<Date>();
-    private static final TIntIntMap queryIntParams = new TIntIntHashMap();
-    private static final TIntShortMap queryShortParams = new TIntShortHashMap();
-    private static final TIntByteMap queryByteParams = new TIntByteHashMap();
+    TIntObjectMap<String> queryStringParams = new TIntObjectHashMap<String>();
+    TIntObjectMap<Date> queryTimeParams = new TIntObjectHashMap<Date>();
+    TIntIntMap queryIntParams = new TIntIntHashMap();
+    TIntShortMap queryShortParams = new TIntShortHashMap();
+    TIntByteMap queryByteParams = new TIntByteHashMap();
 
     public static SqlSelectionQuery build(QueryParameters params) {
         if (params.getWorlds().isEmpty()) {
             throw new IllegalStateException("You must query at least one world");
         }
 
-        whereClauseStringParams.clear();
-        whereClauseTimeParams.clear();
-        whereClauseIntParams.clear();
-        whereClauseShortParams.clear();
-        whereClauseByteParams.clear();
+        SqlSelectionQueryBuilder queryBuilder = new SqlSelectionQueryBuilder();
 
-        queryStringParams.clear();
-        queryTimeParams.clear();
-        queryIntParams.clear();
-        queryShortParams.clear();
-        queryByteParams.clear();
-
-        String whereClause = buildWhereClause(params);
-        String query = buildSelectClauses(params, whereClause);
+        String whereClause = queryBuilder.buildWhereClause(params);
+        String query = queryBuilder.buildSelectClauses(params, whereClause);
         query += " ORDER BY `datetime`";
 
         if (params.isOrderReversed()) {
@@ -89,10 +83,10 @@ public class SqlSelectionQueryBuilder {
 
         query += " LIMIT 900";
 
-        return new SqlSelectionQuery(query, queryStringParams, queryTimeParams, queryIntParams, queryShortParams, queryByteParams);
+        return new SqlSelectionQuery(query, queryBuilder.queryStringParams, queryBuilder.queryTimeParams, queryBuilder.queryIntParams, queryBuilder.queryShortParams, queryBuilder.queryByteParams);
     }
 
-    private static String buildWhereClause(QueryParameters params) {
+    private String buildWhereClause(QueryParameters params) {
         StringBuilder sb = new StringBuilder();
         int paramIndex = 1;
 
@@ -115,7 +109,7 @@ public class SqlSelectionQueryBuilder {
         }
     }
 
-    private static int appendActors(StringBuilder sb, Set<String> set, boolean invert, String field, int initialParamIndex) {
+    private int appendActors(StringBuilder sb, Set<String> set, boolean invert, String field, int initialParamIndex) {
         int paramIndex = initialParamIndex;
 
         if (!set.isEmpty()) {
@@ -146,7 +140,7 @@ public class SqlSelectionQueryBuilder {
         return paramIndex;
     }
 
-    private static int appendActions(StringBuilder sb, QueryParameters params, int initialParamIndex) {
+    private int appendActions(StringBuilder sb, QueryParameters params, int initialParamIndex) {
         int paramIndex = initialParamIndex;
 
         if (!params.getActions().isEmpty()) {
@@ -178,7 +172,7 @@ public class SqlSelectionQueryBuilder {
         return paramIndex;
     }
 
-    private static int appendMaterials(StringBuilder sb, QueryParameters params, int initialParamIndex) {
+    private int appendMaterials(StringBuilder sb, QueryParameters params, int initialParamIndex) {
         int paramIndex = initialParamIndex;
 
         if (!params.getMaterials().isEmpty()) {
@@ -236,7 +230,7 @@ public class SqlSelectionQueryBuilder {
         return paramIndex;
     }
 
-    private static int appendLocation(StringBuilder sb, QueryParameters params, int initialParamIndex) {
+    private int appendLocation(StringBuilder sb, QueryParameters params, int initialParamIndex) {
         int paramIndex = initialParamIndex;
 
         if (params.isLocationSet()) {
@@ -285,7 +279,7 @@ public class SqlSelectionQueryBuilder {
         return paramIndex;
     }
 
-    private static int appendTime(StringBuilder sb, QueryParameters params, int initalParamIndex) {
+    private int appendTime(StringBuilder sb, QueryParameters params, int initalParamIndex) {
         int paramIndex = initalParamIndex;
 
         if (params.getAfter() != null) {
@@ -309,7 +303,7 @@ public class SqlSelectionQueryBuilder {
         return paramIndex;
     }
 
-    private static String buildSelectClauses(QueryParameters params, String whereClause) {
+    private String buildSelectClauses(QueryParameters params, String whereClause) {
         int paramIndex = 1;
         String[] perWorldQueries = new String[params.getWorlds().size()];
 
