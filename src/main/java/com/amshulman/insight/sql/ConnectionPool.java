@@ -42,7 +42,7 @@ public class ConnectionPool implements Closeable {
         config.addDataSourceProperty("serverName", configurationContext.getDatabaseAddress());
         config.addDataSourceProperty("port", configurationContext.getDatabasePort());
         config.addDataSourceProperty("databaseName", configurationContext.getDatabaseName());
-        
+
         /* hack to get around https://mariadb.atlassian.net/browse/CONJ-105 */
         config.addDataSourceProperty("user", configurationContext.getDatabaseUsername());
         config.addDataSourceProperty("password", configurationContext.getDatabasePassword());
@@ -62,7 +62,7 @@ public class ConnectionPool implements Closeable {
 
     /**
      * Returns a free connection.
-     * 
+     *
      * @return Connection handle.
      * @throws SQLException
      */
