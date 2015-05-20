@@ -43,12 +43,8 @@ public class ConnectionPool implements Closeable {
         config.addDataSourceProperty("port", configurationContext.getDatabasePort());
         config.addDataSourceProperty("databaseName", configurationContext.getDatabaseName());
 
-        /* hack to get around https://mariadb.atlassian.net/browse/CONJ-105 */
-        config.addDataSourceProperty("user", configurationContext.getDatabaseUsername());
-        config.addDataSourceProperty("password", configurationContext.getDatabasePassword());
-//        config.setUsername(configurationContext.getDatabaseUsername());
-//        config.setPassword(configurationContext.getDatabasePassword());
-
+        config.setUsername(configurationContext.getDatabaseUsername());
+        config.setPassword(configurationContext.getDatabasePassword());
         config.setPoolName("Insight");
         config.addDataSourceProperty("properties", "rewriteBatchedStatements=true&useFractionalSeconds=true&useUnicode=true&characterEncoding=utf-8");
         if (idleTimeout != INVALID) {
