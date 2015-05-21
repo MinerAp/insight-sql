@@ -155,6 +155,12 @@
 										<include>gnu/trove/**</include>
 									</includes>
 								</filter>
+								<filter>
+									<artifact>org.mariadb.jdbc:mariadb-java-client</artifact>
+									<excludes>
+										<exclude>server-ssl-cert.pem</exclude>
+									</excludes>
+								</filter>
 							</filters>
 							<relocations>
 								<!-- HikariCP -->
