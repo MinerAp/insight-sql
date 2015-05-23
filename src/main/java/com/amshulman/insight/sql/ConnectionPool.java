@@ -48,7 +48,11 @@ public class ConnectionPool implements Closeable {
         config.setPoolName("Insight");
         config.addDataSourceProperty("properties", "rewriteBatchedStatements=true&useFractionalSeconds=true&useUnicode=true&characterEncoding=utf-8");
         if (idleTimeout != INVALID) {
-            config.setIdleTimeout((long) (TimeUnit.SECONDS.toMillis(idleTimeout) * 0.9));
+            try {
+                config.setIdleTimeout((long) (TimeUnit.SECONDS.toMillis(idleTimeout) * 0.9));
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
         }
 
         ds = new HikariDataSource(config);
