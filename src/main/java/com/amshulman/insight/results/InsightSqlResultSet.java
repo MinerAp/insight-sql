@@ -10,7 +10,7 @@ import com.amshulman.insight.action.ItemAction;
 import com.amshulman.insight.query.QueryParameters;
 import com.amshulman.insight.serialization.ItemMetadata;
 import com.amshulman.insight.serialization.StorageMetadata;
-import com.amshulman.insight.types.EventCompat;
+import com.amshulman.insight.types.EventRegistry;
 import com.amshulman.insight.types.InsightLocation;
 import com.amshulman.insight.types.InsightMaterial;
 import com.amshulman.insight.util.SerializationUtil;
@@ -20,7 +20,7 @@ public class InsightSqlResultSet extends InsightResultSet {
     public InsightSqlResultSet(ResultSet rs, QueryParameters params) throws SQLException {
         super(params);
         while (rs.next()) {
-            InsightAction action = EventCompat.getActionByName(rs.getString("action"));
+            InsightAction action = EventRegistry.getActionByName(rs.getString("action"));
             StorageMetadata meta = SerializationUtil.deserializeMetadata(rs.getBytes("metadata"));
 
             InsightMaterial material;
