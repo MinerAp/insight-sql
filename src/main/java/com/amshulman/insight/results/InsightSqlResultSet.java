@@ -21,7 +21,12 @@ public class InsightSqlResultSet extends InsightResultSet {
         super(params);
         while (rs.next()) {
             InsightAction action = EventRegistry.getActionByName(rs.getString("action"));
-            StorageMetadata meta = SerializationUtil.deserializeMetadata(rs.getBytes("metadata"));
+            StorageMetadata meta = null;
+            try {
+                SerializationUtil.deserializeMetadata(rs.getBytes("metadata"));
+            } catch (IllegalArgumentException e) {
+                // Nothing useful to do here
+            }
 
             InsightMaterial material;
             if (action instanceof BlockAction) {
