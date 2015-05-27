@@ -80,7 +80,7 @@ public class SqlReadWriteBackend implements ReadBackend, WriteBackend {
              PreparedStatement stmt = SqlSelectionQueryBuilder.build(params).getPreparedStatement(c)) {
             stmt.execute();
             results = new InsightSqlResultSet(stmt.getResultSet(), params);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
