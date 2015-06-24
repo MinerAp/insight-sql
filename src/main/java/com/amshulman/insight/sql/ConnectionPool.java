@@ -46,7 +46,7 @@ public class ConnectionPool implements Closeable {
         config.setUsername(configurationContext.getDatabaseUsername());
         config.setPassword(configurationContext.getDatabasePassword());
         config.setPoolName("Insight");
-        config.addDataSourceProperty("properties", "rewriteBatchedStatements=false&useFractionalSeconds=true&useUnicode=true&characterEncoding=utf-8");
+        config.addDataSourceProperty("properties", "rewriteBatchedStatements=true&useFractionalSeconds=true&useUnicode=true&characterEncoding=utf-8");
         if (idleTimeout != INVALID) {
             try {
                 config.setIdleTimeout((long) (TimeUnit.SECONDS.toMillis(idleTimeout) * 0.9));
