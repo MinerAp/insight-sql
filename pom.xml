@@ -44,7 +44,7 @@
 		<hikaricp.version>2.3.8</hikaricp.version> <!-- http://search.maven.org/#browse|-1039651385 -->
 		<log4j-slf4j-impl.version>2.0-rc1</log4j-slf4j-impl.version> <!-- http://search.maven.org/#browse|1135485015 -->
 		<mariadb-java-client.version>1.1.9</mariadb-java-client.version> <!-- http://search.maven.org/#browse|-1917366752 -->
-		<postgresql.version>9.3-1102-jdbc41</postgresql.version> <!-- http://search.maven.org/#browse|638508203 -->
+		<postgresql.version>9.4-1201-jdbc41</postgresql.version> <!-- http://search.maven.org/#browse|638508203 -->
 	</properties>
 
 	<dependencies>
