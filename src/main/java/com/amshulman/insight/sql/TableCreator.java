@@ -19,7 +19,7 @@ public class TableCreator {
                 "  `name` varchar(32) NOT NULL," +
                 "  PRIMARY KEY (`id`)," +
                 "  UNIQUE KEY `name` (`name`)" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+                ") ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8;";
 
         String createActorTable =
                 "CREATE TABLE IF NOT EXISTS `actors` (" +
@@ -28,7 +28,7 @@ public class TableCreator {
                 "  `uuid` binary(16) DEFAULT NULL," +
                 "  PRIMARY KEY (`id`)," +
                 "  UNIQUE KEY `name` (`name`)" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+                ") ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8;";
 
         String createMaterialTable =
                 "CREATE TABLE IF NOT EXISTS `materials` (" +
@@ -38,7 +38,7 @@ public class TableCreator {
                 "  `subtype` smallint(5) unsigned NOT NULL," +
                 "  PRIMARY KEY (`id`)," +
                 "  UNIQUE KEY `name` (`name`,`subtype`,`namespace`)" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+                ") ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8;";
 
         try (Connection conn = cp.getConnection();
                 Statement stmt = conn.createStatement();) {
@@ -75,7 +75,7 @@ public class TableCreator {
                 "  CONSTRAINT `%world%_blocks_ibfk_1` FOREIGN KEY (`actionid`) REFERENCES `actions` (`id`)," +
                 "  CONSTRAINT `%world%_blocks_ibfk_2` FOREIGN KEY (`actorid`) REFERENCES `actors` (`id`)," +
                 "  CONSTRAINT `%world%_blocks_ibfk_3` FOREIGN KEY (`blockid`) REFERENCES `materials` (`id`)" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+                ") ENGINE=InnoDB ROW_FORMAT=COMPRESSED DEFAULT CHARSET=utf8;";
 
         String createEntityTable =
                 "CREATE TABLE IF NOT EXISTS `%world%_entities` (" +
@@ -97,7 +97,7 @@ public class TableCreator {
                 "  CONSTRAINT `%world%_entities_ibfk_1` FOREIGN KEY (`actionid`) REFERENCES `actions` (`id`)," +
                 "  CONSTRAINT `%world%_entities_ibfk_2` FOREIGN KEY (`actorid`) REFERENCES `actors` (`id`)," +
                 "  CONSTRAINT `%world%_entities_ibfk_3` FOREIGN KEY (`acteeid`) REFERENCES `actors` (`id`)" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+                ") ENGINE=InnoDB ROW_FORMAT=COMPRESSED DEFAULT CHARSET=utf8;";
 
         String createItemTable =
                 "CREATE TABLE IF NOT EXISTS `%world%_items` (" +
@@ -119,7 +119,7 @@ public class TableCreator {
                 "  CONSTRAINT `%world%_items_ibfk_1` FOREIGN KEY (`actionid`) REFERENCES `actions` (`id`)," +
                 "  CONSTRAINT `%world%_items_ibfk_2` FOREIGN KEY (`actorid`) REFERENCES `actors` (`id`)," +
                 "  CONSTRAINT `%world%_items_ibfk_3` FOREIGN KEY (`itemid`) REFERENCES `materials` (`id`)" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+                ") ENGINE=InnoDB ROW_FORMAT=COMPRESSED DEFAULT CHARSET=utf8;";
 
         createBlockTable = createBlockTable.replaceAll("%world%", worldName);
         createEntityTable = createEntityTable.replaceAll("%world%", worldName);
