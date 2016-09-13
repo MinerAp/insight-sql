@@ -72,7 +72,7 @@ public class ConnectionPool implements Closeable {
 
     @Override
     public void close() {
-        ds.shutdown();
+        ds.close();
     }
 
     private static long getMySqlIdleTimeout(InsightDatabaseConfigurationInfo configurationContext) {
