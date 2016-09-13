@@ -41,7 +41,7 @@ public class InsightSqlResultSet extends InsightResultSet {
                 material = null;
             }
 
-            add(new InsightRecord(
+            add(new InsightRecord<InsightAction>(
                   rs.getTimestamp("datetime"),
                   rs.getString("actor"),
                   action,
