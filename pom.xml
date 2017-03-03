@@ -32,19 +32,19 @@
 	<distributionManagement>
 		<repository>
 			<id>minerap-release</id>
-			<url>http://repo.minerap.com/content/repositories/releases/</url>
+			<url>https://repo.minerap.com/repository/minerap-releases/</url>
 		</repository>
 		<snapshotRepository>
 			<id>minerap-snapshot</id>
-			<url>http://repo.minerap.com/content/repositories/snapshots/</url>
+			<url>https://repo.minerap.com/repository/minerap-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 
 	<properties>
-		<hikaricp.version>2.4.7</hikaricp.version> <!-- http://search.maven.org/#browse|-1039651385 -->
+		<hikaricp.version>2.6.0</hikaricp.version> <!-- http://search.maven.org/#browse|-1039651385 -->
 		<log4j-slf4j-impl.version>2.0-rc1</log4j-slf4j-impl.version> <!-- http://search.maven.org/#browse|1135485015 -->
-		<mariadb-java-client.version>1.1.9</mariadb-java-client.version> <!-- http://search.maven.org/#browse|-1917366752 -->
-		<postgresql.version>9.4-1201-jdbc41</postgresql.version> <!-- http://search.maven.org/#browse|638508203 -->
+		<mariadb-java-client.version>1.5.8</mariadb-java-client.version> <!-- http://search.maven.org/#browse|-1917366752 -->
+		<postgresql.version>42.0.0</postgresql.version> <!-- http://search.maven.org/#browse|638508203 -->
 	</properties>
 
 	<dependencies>
@@ -129,7 +129,7 @@
 		<repository>
 			<id>minerap-repo</id>
 			<name>MinerAp</name>
-			<url>http://repo.minerap.com/content/groups/public/</url>
+			<url>https://repo.minerap.com/repository/public/</url>
 		</repository>
 	</repositories>
 

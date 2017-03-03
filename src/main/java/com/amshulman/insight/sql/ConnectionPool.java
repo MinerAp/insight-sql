@@ -24,7 +24,7 @@ public class ConnectionPool implements Closeable {
 
         switch (configurationContext.getDatabaseType()) {
             case MYSQL:
-                config.setDataSourceClassName(org.mariadb.jdbc.MySQLDataSource.class.getName());
+                config.setDataSourceClassName(org.mariadb.jdbc.MariaDbDataSource.class.getName());
                 idleTimeout = getMySqlIdleTimeout(configurationContext);
                 break;
             case POSTGRES:
@@ -34,11 +34,7 @@ public class ConnectionPool implements Closeable {
                 throw new IllegalArgumentException();
         }
 
-        // config.setConnectionTimeout(1000);
-        // config.setMaximumPoolSize(10);
-        config.setInitializationFailFast(true);
-        // config.setRegisterMbeans(false);
-        // config.setAutoCommit(true);
+        config.setInitializationFailTimeout(3000);
         config.addDataSourceProperty("serverName", configurationContext.getDatabaseAddress());
         config.addDataSourceProperty("port", configurationContext.getDatabasePort());
         config.addDataSourceProperty("databaseName", configurationContext.getDatabaseName());
