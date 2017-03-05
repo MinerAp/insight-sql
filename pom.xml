@@ -159,6 +159,7 @@
 									<artifact>org.mariadb.jdbc:mariadb-java-client</artifact>
 									<excludes>
 										<exclude>server-ssl-cert.pem</exclude>
+										<exclude>Version.java.template</exclude>
 									</excludes>
 								</filter>
 							</filters>
