@@ -42,7 +42,7 @@ public class InsightSqlResultSet extends InsightResultSet {
             }
 
             add(new InsightRecord<InsightAction>(
-                  rs.getTimestamp("datetime"),
+                  rs.getTimestamp("datetime").toLocalDateTime(),
                   rs.getString("actor"),
                   action,
                   new InsightLocation(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getString("world")),

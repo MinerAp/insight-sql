@@ -17,7 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -52,14 +52,14 @@ public class SqlSelectionQueryBuilder {
     static char RIGHT_PAREN = ')';
     static char PARAM = '?';
 
-    TIntObjectMap<String> whereClauseStringParams = new TIntObjectHashMap<String>();
-    TIntObjectMap<Date> whereClauseTimeParams = new TIntObjectHashMap<Date>();
+    TIntObjectMap<String> whereClauseStringParams = new TIntObjectHashMap<>();
+    TIntObjectMap<LocalDateTime> whereClauseTimeParams = new TIntObjectHashMap<>();
     TIntIntMap whereClauseIntParams = new TIntIntHashMap();
     TIntShortMap whereClauseShortParams = new TIntShortHashMap();
     TIntByteMap whereClauseByteParams = new TIntByteHashMap();
 
-    TIntObjectMap<String> queryStringParams = new TIntObjectHashMap<String>();
-    TIntObjectMap<Date> queryTimeParams = new TIntObjectHashMap<Date>();
+    TIntObjectMap<String> queryStringParams = new TIntObjectHashMap<>();
+    TIntObjectMap<LocalDateTime> queryTimeParams = new TIntObjectHashMap<>();
     TIntIntMap queryIntParams = new TIntIntHashMap();
     TIntShortMap queryShortParams = new TIntShortHashMap();
     TIntByteMap queryByteParams = new TIntByteHashMap();
@@ -435,7 +435,7 @@ public class SqlSelectionQueryBuilder {
 
         private final String sql;
         private final TIntObjectMap<String> stringParams;
-        private final TIntObjectMap<Date> timeParams;
+        private final TIntObjectMap<LocalDateTime> timeParams;
         private final TIntIntMap intParams;
         private final TIntShortMap shortParams;
         private final TIntByteMap byteParams;
@@ -456,11 +456,11 @@ public class SqlSelectionQueryBuilder {
                 }
             });
 
-            status &= timeParams.forEachEntry(new TIntObjectProcedure<Date>() {
+            status &= timeParams.forEachEntry(new TIntObjectProcedure<LocalDateTime>() {
 
-                public boolean execute(int a, Date b) {
+                public boolean execute(int a, LocalDateTime b) {
                     try {
-                        stmt.setTimestamp(a, new Timestamp(b.getTime()));
+                        stmt.setTimestamp(a, Timestamp.valueOf(b));
                     } catch (SQLException e) {
                         return false;
                     }
